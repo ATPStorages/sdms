@@ -74,7 +74,12 @@
             <property name="height-request">30</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
+            <property name="tooltip-markup" translatable="yes">The Simple Mail Transfer Protocol (SMTP) allows for clients to send and receive e-mails to and from this server. 
+
+&lt;b&gt;You won't be allowed to start the server without it.&lt;/b&gt;</property>
             <property name="max-length">5</property>
+            <property name="width-chars">5</property>
+            <property name="max-width-chars">5</property>
             <property name="caps-lock-warning">False</property>
             <property name="placeholder-text" translatable="yes">25, 587</property>
             <property name="input-purpose">digits</property>
@@ -91,7 +96,12 @@
             <property name="height-request">30</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
+            <property name="tooltip-markup" translatable="yes">The Internet Message Access Protocol (IMAP) allows for clients to receive their respective e-mail from this server. 
+
+&lt;b&gt;Either IMAP or POP3 (and in both cases, SMTP) must be set to start the server; both can also be used.&lt;/b&gt;</property>
             <property name="max-length">5</property>
+            <property name="width-chars">5</property>
+            <property name="max-width-chars">5</property>
             <property name="caps-lock-warning">False</property>
             <property name="placeholder-text" translatable="yes">143, 993</property>
             <property name="input-purpose">digits</property>
@@ -108,7 +118,12 @@
             <property name="height-request">30</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
+            <property name="tooltip-markup" translatable="yes">The Post Office Protocol, Version 3 (POP3) allows for clients to receive their respective e-mail from this server &lt;i&gt;and removing it from the server afterwards.&lt;/i&gt; 
+
+&lt;b&gt;Either IMAP or POP3 (and in both cases, SMTP) must be set to start the server; both can also be used.&lt;/b&gt;</property>
             <property name="max-length">5</property>
+            <property name="width-chars">5</property>
+            <property name="max-width-chars">5</property>
             <property name="caps-lock-warning">False</property>
             <property name="placeholder-text" translatable="yes">110, 995</property>
             <property name="input-purpose">digits</property>
@@ -125,6 +140,7 @@
             <property name="width-request">445</property>
             <property name="height-request">30</property>
             <property name="visible">True</property>
+            <property name="sensitive">False</property>
             <property name="can-focus">True</property>
             <property name="can-default">True</property>
             <property name="receives-default">True</property>
@@ -141,6 +157,7 @@
             <property name="width-request">150</property>
             <property name="height-request">30</property>
             <property name="visible">True</property>
+            <property name="sensitive">False</property>
             <property name="can-focus">True</property>
             <property name="receives-default">False</property>
             <property name="draw-indicator">True</property>
@@ -156,6 +173,7 @@
             <property name="width-request">100</property>
             <property name="height-request">30</property>
             <property name="visible">True</property>
+            <property name="sensitive">False</property>
             <property name="can-focus">True</property>
             <property name="receives-default">False</property>
             <property name="draw-indicator">True</property>
@@ -171,6 +189,7 @@
             <property name="width-request">100</property>
             <property name="height-request">30</property>
             <property name="visible">True</property>
+            <property name="sensitive">False</property>
             <property name="can-focus">True</property>
             <property name="receives-default">False</property>
             <property name="draw-indicator">True</property>
@@ -186,8 +205,10 @@
             <property name="height-request">30</property>
             <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="tooltip-text" translatable="yes">The Post Office specifies where to store user's e-mails, along with attachments.</property>
             <property name="action">select-folder</property>
             <property name="title" translatable="yes">Post Office Location</property>
+            <property name="width-chars">20</property>
           </object>
           <packing>
             <property name="x">100</property>
