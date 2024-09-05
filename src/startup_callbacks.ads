@@ -4,11 +4,16 @@ with Gtk.Enums;
 
 with Gtk.Container;           use Gtk.Container;
 with Gtk.Button;              use Gtk.Button;
+with Gtk.Dialog;              use Gtk.Dialog;
 with Gtk.File_Chooser_Button; use Gtk.File_Chooser_Button;
 
 package Startup_Callbacks is
 
    Builder : access Gtk_Builder;
+
+   generic
+      Dialog : Gtk_Dialog;
+   procedure Attach_Dialog_Close (Self : access Gtk_Builder_Record'Class);
 
    procedure Quit (Self   : access Gtk_Container_Record'Class;
                    Object : not null access Gtk_Widget_Record'Class);

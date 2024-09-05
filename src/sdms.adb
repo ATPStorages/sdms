@@ -14,6 +14,8 @@ with Startup_Callbacks;
 
 procedure Sdms is
    Builder : aliased Gtk_Builder;
+
+   discard : Boolean;
 begin
    Gtk.Main.Init;
 

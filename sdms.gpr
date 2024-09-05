@@ -1,14 +1,15 @@
 with "config/sdms_config.gpr";
+
 project Sdms is
 
-   for Source_Dirs use ("src/", "config/");
+   for Source_Dirs use ("src", "config");
    for Object_Dir use "obj/" & Sdms_Config.Build_Profile;
    for Create_Missing_Dirs use "True";
    for Exec_Dir use "bin";
    for Main use ("sdms.adb");
 
    package Compiler is
-      for Default_Switches ("Ada") use Sdms_Config.Ada_Compiler_Switches;
+      for Default_Switches ("ada") use ("-Og", "-ffunction-sections", "-fdata-sections", "-g", "-gnatW8", "-gnatX", "-gnatVa", "-gnatwa.X", "-gnatyaABbc-defhiIklM79nOprStux");
    end Compiler;
 
    package Binder is
@@ -20,3 +21,4 @@ project Sdms is
    end Install;
 
 end Sdms;
+

@@ -1,0 +1,166 @@
+SHELL=/bin/sh
+
+.SUFFIXES:
+.PHONY: clean-generic mostlyclean-generic \
+	clean distclean mostlyclean maintainer-clean \
+	install src tests docs generate tools
+
+doc_dir = docs
+PYTHON  = python
+
+# This variable can be overridden with "-d" to get progress output
+GPRBUILD_OPTIONS=
+
+GPRINSTALL_OPTIONS=
+
+TARGET=
+ifeq ($(TARGET),)
+GPRBUILD=/usr/bin/gprbuild $(GPRBUILD_OPTIONS)
+GPRINSTALL=/usr/bin/gprinstall $(GPRINSTALL_OPTIONS)
+else
+GPRBUILD=/usr/bin/gprbuild --target=${TARGET} $(GPRBUILD_OPTIONS)
+GPRINSTALL=/usr/bin/gprinstall --target=${TARGET} $(GPRINSTALL_OPTIONS)
+endif
+
+# Number of parallel compilation
+PROCESSORS   = 0
+
+# Location (under $prefix) where the project files should be copied
+PRJDIR=lib/gnat
+
+GPRBUILD_FULL = ${GPRBUILD} -j${PROCESSORS} -m -p ${GPRBUILD_SWITCHES}
+GPRINSTALL_FULL = ${GPRINSTALL} -p -f --project-subdir=$(PRJDIR) \
+	--build-var=GTKADA_BUILD,LIBRARY_TYPE --install-name=gtkada \
+	--prefix=${DESTDIR}$(prefix) -XGTK_PREFIX=${prefix}
+
+GETTEXT_INTL=False
+HAVE_GETTEXT=True
+BUILD_SHARED=yes
+BUILD_STATIC=yes
+BUILD_STATIC_PIC=yes
+TARNAME=gtkada
+VERSION=18.0w
+DESTDIR=
+prefix=/usr/local
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+datadir=${datarootdir}
+datarootdir=${prefix}/share
+exampledir=${datadir}/examples/gtkada/testgtk
+
+all:
+
+ifeq (${BUILD_STATIC}, yes)
+all tools tests: static
+install: install/static
+endif
+
+ifeq (${BUILD_STATIC_PIC}, yes)
+all tools tests: build_library_type/static-pic
+install: install/static-pic
+LIBRARY_TYPE_FOR_TOOLS=static-pic
+endif
+
+ifeq (${BUILD_SHARED},yes)
+all tools tests: relocatable
+install: install/relocatable
+LIBRARY_TYPE_FOR_TOOLS=relocatable
+endif
+
+ifeq (${BUILD_STATIC}, yes)
+LIBRARY_TYPE_FOR_TOOLS=static
+endif
+
+all: tools tests
+static: build_library_type/static
+relocatable: build_library_type/relocatable
+
+tools:
+	@echo "====== Building tools ====="
+	${GPRBUILD_FULL} -XLIBRARY_TYPE=$(LIBRARY_TYPE_FOR_TOOLS) -Psrc/tools/tools.gpr
+
+build_library_type/%:  src/gtkada-intl.adb
+	@echo "====== Building $(@F) libraries ====="
+	${GPRBUILD_FULL} -XLIBRARY_TYPE=$(@F) -Psrc/gtkada.gpr
+
+src/gtkada-intl.adb: src/gtkada-intl.gpb Makefile
+	gnatprep -DGETTEXT_INTL=$(GETTEXT_INTL) -DHAVE_GETTEXT=$(HAVE_GETTEXT) src/gtkada-intl.gpb $@
+
+tests:
+	@echo "====== Building tests ====="
+	cd testgtk; ${GPRBUILD_FULL} -XLIBRARY_TYPE=$(LIBRARY_TYPE_FOR_TOOLS) -Ptestgtk.gpr -aP ../src
+
+install/%: force
+	${GPRINSTALL_FULL} -XLIBRARY_TYPE=$(@F) --build-name=$(@F) \
+		--sources-subdir=include/gtkada/gtkada.$(@F) \
+		--lib-subdir=lib/gtkada/gtkada.$(@F) \
+		-Psrc/gtkada.gpr
+
+install-clean:
+ifneq (,$(wildcard $(prefix)/lib/gnat/manifests/gtkada))
+	-$(GPRINSTALL) --uninstall -f --prefix=$(prefix) \
+		--project-subdir=lib/gnat gtkada
+endif
+
+install: install-clean
+	${GPRINSTALL_FULL} -XLIBRARY_TYPE=$(LIBRARY_TYPE_FOR_TOOLS) \
+		--mode=usage -Psrc/tools/tools.gpr
+	cd testgtk; ${GPRINSTALL_FULL} -XLIBRARY_TYPE=$(LIBRARY_TYPE_FOR_TOOLS) \
+		--mode=usage --exec-subdir=${DESTDIR}${exampledir} \
+		-Ptestgtk.gpr -aP ../src
+ifneq ($(OS),Windows_NT)
+	ln -s ${libdir} ${DESTDIR}${datadir}/examples/gtkada --force
+endif
+	@echo '-----------------------------------------------------------------------'
+	@echo '--  GtkAda has now been installed.                                   --'
+	@echo '--  To use the library, you may need to update LD_LIBRARY_PATH       --'
+	@echo '--  or to run ldconfig. You may also need to update GPR_PROJECT_PATH --'
+	@echo '--  to include                                                       --'
+	@echo '--  ${prefix}/lib/gnat'
+	@echo '-----------------------------------------------------------------------'
+
+docs:
+	$(MAKE) -C docs
+
+# Generate the binding automatically, through a python script
+generate:
+	${RM} src/generated/*.ad?
+	${PYTHON} contrib/binding.py \
+	   --gir-file=contrib/GLib-2.0.gir \
+	   --gir-file=contrib/GObject-2.0.gir \
+		--gir-file=contrib/Gtk-3.0.gir \
+		--gir-file=contrib/Gdk-3.0.gir \
+		--gir-file=contrib/Pango-1.0.gir \
+		--gir-file=contrib/Gio-2.0.gir \
+		--xml-file=contrib/binding.xml \
+		--ada-output=src/generated/tmp.ada \
+		--c-output=src/misc_generated.c
+	cd src/generated; gnatchop -gnat05 -q -w tmp.ada
+
+clean-generic:
+	-${RM} core
+	-${RM} .\#*
+
+mostlyclean-generic: clean-generic
+	-${RM} Makefile src/config.h gtkada_shared.gpr
+	-${RM} testgtk/opengl/view_gl.adb
+
+clean/%: force
+	-gprclean -r -q -XLIBRARY_TYPE=$(@F) -Psrc/tools/tools.gpr
+	-gprclean -r -q -XLIBRARY_TYPE=$(@F) -Ptestgtk/testgtk.gpr
+	-gprclean -r -q -XLIBRARY_TYPE=$(@F) -Psrc/gtkada.gpr
+
+clean: clean-generic clean/static clean/static-pic clean/relocatable
+
+distclean: clean mostlyclean-generic
+	-${RM} config.cache config.log config.status
+	-$(MAKE) -C $(doc_dir) distclean
+	-$(MAKE) -C po distclean
+
+mostlyclean: mostlyclean-generic
+
+maintainer-clean: mostlyclean-generic
+	-${RM} config.cache config.log config.status
+	-${RM} configure
+
+force:
